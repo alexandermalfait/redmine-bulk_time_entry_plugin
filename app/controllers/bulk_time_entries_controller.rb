@@ -12,12 +12,30 @@ class BulkTimeEntriesController < ApplicationController
     end
   end
 
-  def get_issues(project_id)
-    @issues = Issue.find(:all, :conditions => { :project_id => project_id })
+  def get_issues(project_id, assigned_to_id = nil, only_open = false)
+    # would prefer to build the sql through named scopes :|
+    conditions_sql = []
+    conditions_params = []
+
+    conditions_sql << "project_id = ?"
+    conditions_params << project_id
+
+    if assigned_to_id
+      conditions_sql << "assigned_to_id = ?"
+      conditions_params << assigned_to_id
+    end
+
+    if only_open
+      conditions_sql << "issue_statuses.is_closed = ?"
+      conditions_params << false
+    end
+
+    @issues = Issue.find(:all, :conditions => [ conditions_sql.join(' AND ') ] + conditions_params, :include => :status)
   end
   
   def load_assigned_issues
-    get_issues params[:project_id]
+    get_issues params[:project_id], params[:assigned_to_id], params[:only_open]
+
     render(:update) do |page|
       page.replace_html params[:entry_id]+'_issues', :partial => 'issues_selector', :locals => { :issues => @issues, :rnd => params[:entry_id].split('_')[1]  }
     end
@@ -48,7 +66,7 @@ class BulkTimeEntriesController < ApplicationController
   def add_entry
     begin
       spent_on = Date.parse(params[:date])
-    rescue ArgumentError
+    rescue ArgumentError, TypeError
       # Fall through
     end
     spent_on ||= Date.today

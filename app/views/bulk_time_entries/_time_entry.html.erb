@@ -1,41 +1,56 @@
 <% fields_for('time_entries[]', time_entry) do |f| %>
-  <%# trick to have automatically populated html id/names of fields %>
-  <% time_entry.id = rnd = rand(9999)
-  @object = time_entry 
-  @object_name = 'time_entry' -%>
-  <div class="box" id="entry_<%= rnd %>">
-    <%# TODO: preselect project if in project page %>
-    <%= error_messages_for 'time_entry' %>
-    <p>
-      <%= label_for_field :project_id, rnd, :required => true %>
-      <%  ordered_projects = group_by_root_for_select(@projects) %>
-      <%= f.select :project_id, ordered_projects, {}, 
-        { :onchange => "new Ajax.Request('#{url_for :action => 'load_assigned_issues'}', { parameters: { project_id: $F(this), entry_id: $(this).up(1).id } } )" } %>&nbsp;
-    </p>
-    <p id="entry_<%= rnd %>_issues">
-    <% @issues = controller.get_issues ordered_projects.first %>
-    <%= render :partial => 'issues_selector', :locals => { :issues => @issues, :f => f, :rnd => rnd } %>
-    </p>
-    <p>
-      <%= label_for_field :spent_on, rnd, :required => true %>
-      <%= f.text_field :spent_on, :size => 10, :name => "time_entries[#{rnd}][spent_on]", :id => "time_entries_#{rnd}_spent_on", :class => 'spent_on' %><%= calendar_for("time_entries_#{rnd}_spent_on") %>
-    </p>
-    <p>
-      <%= label_for_field :hours, rnd, :required => true %>
-      <%= f.text_field :hours, :size => 6, :maxlength => 6 %>
-    </p>
-    <p>
-      <%= label_for_field :comments, rnd %>
-      <%= f.text_field :comments, :size => 100, :maxlength => 255 %>
-    </p>
-    <p>
-      <%= label_for_field :activity_id, rnd, :required => true %>
-      <%= f.select :activity_id, (@activities.collect {|p| [p.name, p.id]}) %>
-    </p>
-    <% time_entry.custom_field_values.each do |value| %>
-      <p><%= custom_field_tag_with_label "time_entries[#{rnd}]", value %></p>
-    <% end if time_entry.respond_to?(:custom_field_values) %>
-  </div>
+   <%# trick to have automatically populated html id/names of fields %>
+   <% time_entry.id = rnd = rand(9999)
+   @object = time_entry
+   @object_name = 'time_entry' -%>
+   <div class="box" id="entry_<%= rnd %>">
+      <%# TODO: preselect project if in project page %>
+      <%= error_messages_for 'time_entry' %>
+      <p>
+         <%= label_for_field :project_id, rnd, :required => true %>
+         <%  ordered_projects = group_by_root_for_select(@projects) %>
+         <%= f.select :project_id, ordered_projects, {}, { :class => "project-select" } %>&nbsp;
+      </p>
+      <p id="entry_<%= rnd %>_issues">
+         <% @issues = controller.get_issues ordered_projects.first[1] %>
+         <%= render :partial => 'issues_selector', :locals => { :issues => @issues, :f => f, :rnd => rnd } %>
+      </p>
+      <p>
+         <input type="checkbox" class="only-my-issues-checkbox" />
+         <%= h l(:label_only_my_issues) %>
+
+         <input type="checkbox" class="no-closed-issues-checkbox" />
+         <%= h l(:label_no_closed_issues) %>
+
+         <span style="margin-left: 1em;">
+            <%= h l(:label_select_issue_by_nr)  %>
+            <input type="text" class="jump-to-issue" size="6" />
+         </span>
+      </p>
+      <p>
+         <%= label_for_field :spent_on, rnd, :required => true %>
+         <%= f.text_field :spent_on, :size => 10, :name => "time_entries[#{rnd}][spent_on]", :id => "time_entries_#{rnd}_spent_on", :class => 'spent_on' %><%= calendar_for("time_entries_#{rnd}_spent_on") %>
+      </p>
+      <p>
+         <%= label_for_field :hours, rnd, :required => true %>
+         <%= f.text_field :hours, :size => 6, :maxlength => 6 %>
+      </p>
+      <p>
+         <%= label_for_field :comments, rnd %>
+         <%= f.text_field :comments, :size => 100, :maxlength => 255 %>
+      </p>
+      <p>
+         <%= label_for_field :activity_id, rnd, :required => true %>
+         <%= f.select :activity_id, (@activities.collect {|p| [p.name, p.id]}) %>
+      </p>
+      <% time_entry.custom_field_values.each do |value| %>
+         <p><%= custom_field_tag_with_label "time_entries[#{rnd}]", value %></p>
+      <% end if time_entry.respond_to?(:custom_field_values) %>
+   </div>
 <% end %>
 
 <%= javascript_tag("Form.Element.focus('time_entries_#{time_entry.id}_project_id')") %>
+
+<script type="text/javascript">
+   var timeEntry = new TimeEntry($('entry_<%= @object.id %>'))
+</script>

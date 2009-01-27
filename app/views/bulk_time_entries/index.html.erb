@@ -1,14 +1,17 @@
 <h2><%= l(:label_bulk_time_entries) %></h2>
 
+<%= render :partial => "inline_javascript" %>
+
 <% remote_form_for :bulk_time_entry_title, @bulk_time_entry, :url => {:action => 'save'}, :html => {:class => 'tabular'} do |f| %>
   <div id="entries">
     <%= render :partial => 'time_entry', :collection => @time_entries %>
   </div>
   <div id="add-entry">
-    <%= link_to_remote l(:label_bulk_time_add_another), :url => {:action => 'add_entry'}, :html => {:accesskey => 'a'}, :with => "'date=' + $$('.spent_on').last().value" %>
+    <%= link_to_remote l(:label_bulk_time_add_another), :url => {:action => 'add_entry'}, :html => {:accesskey => 'a'} %>
   </div>
   <br/>
   <%= submit_tag l(:button_save) %>
 <% end %>
 
 <% html_title l(:label_bulk_time_entries) %>
+
