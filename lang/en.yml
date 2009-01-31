@@ -7,3 +7,4 @@ label_select_issue_first: Select an issue, then click this icon to open it in a 
 label_only_my_issues: Only show issues assigned to me
 label_no_closed_issues: Don't show closed issues
 label_select_issue_by_nr: "Select issue #"
+button_save_this_entry: Save this entry
