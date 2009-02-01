@@ -8,6 +8,8 @@ var TimeEntry = Class.create({
 
      //focus the project pulldown by default
      this.getElement('select.project-select').focus()
+
+     this.startTimer()
   } ,
 
   observeElements: function() {
@@ -44,6 +46,13 @@ var TimeEntry = Class.create({
      this.getElement('button.save-button').observe('click',function() {
 
      })
+
+     //obverse the toggle timer button
+     this.getElement('button.toggle-timer-button').observe('click',function(event) {
+         event.stop()
+
+         this.toggleTimer()
+     }.bind(this))
   } ,
 
   bindIssueSelectorToLink: function() {
@@ -107,6 +116,66 @@ var TimeEntry = Class.create({
      }
   } ,
 
+  toggleTimer: function() {
+     if(this.timer == null) {
+         this.startTimer()
+     }
+     else {
+         this.stopTimer()
+     }
+  } ,
+
+  startTimer: function() {
+      this.stopAllTimers()
+
+      var hoursInput = this.getElement('input.hours-input')
+
+      hoursInput.setStyle({backgroundColor:"#acfbc1"})
+
+      this.timedMinutes = this.convertDecimalHoursToMinutes(hoursInput.value)
+
+      this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.stop_timer
+
+      this.timer = new PeriodicalExecuter(function() {
+        this.timedMinutes++;
+        this.updateHoursField()
+      }.bind(this), 1)
+  } ,
+
+  stopTimer: function() {
+      if(this.timer != null) {
+          this.timer.stop()
+          this.timer = null
+      }
+
+      this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.start_timer
+
+      this.getElement('input.hours-input').setStyle('background',"#faadb6")
+      this.getElement('input.hours-input').setStyle({backgroundColor:"#faadb6"})
+  } ,
+
+  stopAllTimers: function() {
+      TimeEntry.entries.each(function(entry) {
+          entry.stopTimer()
+      })
+  } ,
+
+  updateHoursField: function() {
+      this.getElement('input.hours-input').value = this.convertMinutesToDecimalHours(this.timedMinutes)
+  } ,
+
+  convertMinutesToDecimalHours: function(minutes) {
+      return Math.round((minutes / 60) * 100) / 100
+  } ,
+
+  convertDecimalHoursToMinutes: function(hours) {
+     if(!hours) {
+         return 0;
+     }
+
+     return parseFloat(hours) * 60
+  } ,
+
   getElement: function(cssClass) {
      return this.container.down(cssClass)
   }
@@ -118,3 +187,7 @@ TimeEntry.lastValues = {
   noClosedIssues: false,
   lastSpentOnDate: null //this one is set from ruby
 }
+
+TimeEntry.language = { }
+
+TimeEntry.entries = []

@@ -1,24 +1,33 @@
 <h2><%= l(:label_bulk_time_entries) %></h2>
 
 <% content_for :header_tags do %>
-  <%= javascript_include_tag 'timeentry', :plugin => 'bulk_time_entry_plugin' %>
+   <%= stylesheet_link_tag 'style', :plugin => 'bulk_time_entry_plugin' %>
+   <%= javascript_include_tag 'timeentry', :plugin => 'bulk_time_entry_plugin' %>
 
-  <script type="text/javascript">
-    TimeEntry.defaultUserId = <%= User.current.id %>
-    TimeEntry.loadIssuesUrl = "<%= url_for :action => 'load_assigned_issues' %>"
-    TimeEntry.lastValues.lastSpentOnDate = "<%=  Date.today.to_s %>"
-  </script>
+   <script type="text/javascript">
+      TimeEntry.defaultUserId = <%= User.current.id %>
+      TimeEntry.loadIssuesUrl = "<%= url_for :action => 'load_assigned_issues' %>"
+      TimeEntry.lastValues.lastSpentOnDate = "<%=  Date.today.to_s %>"
+
+      TimeEntry.language.start_timer = <%= l(:button_start_timer).to_json %>
+      TimeEntry.language.stop_timer = <%= l(:button_stop_timer).to_json %>
+      TimeEntry.language.are_you_sure = <%= l(:text_are_you_sure).to_json %>
+   </script>
 <% end %>
 
 
-<% remote_form_for :bulk_time_entry_title, @bulk_time_entry, :url => {:action => 'save'}, :html => {:class => 'tabular'} do |f| %>
-  <div id="entries">
-    <%= render :partial => 'time_entry', :collection => @time_entries %>
-  </div>
-  <div id="add-entry">
-    <%= link_to_remote l(:label_bulk_time_add_another), :url => {:action => 'add_entry'}, :html => {:accesskey => 'a'} %>
-  </div>
-<% end %>
+<div id="entries">
+   <%= render :partial => 'time_entry', :collection => @time_entries %>
+</div>
+<div id="add-entry">
+   <button onclick="<%= remote_function(:url => {:action => 'add_entry'}) %>" accesskey="a">
+      <%=  l(:label_bulk_time_add_another) %>
+   </button>
+
+   <button onclick="TimeEntry.saveAllEntries(); return false;" style="margin-left: 1em;">
+      <%= l(:button_save_all_entries) %>
+   </button>
+</div>
 
 <% html_title l(:label_bulk_time_entries) %>
 
