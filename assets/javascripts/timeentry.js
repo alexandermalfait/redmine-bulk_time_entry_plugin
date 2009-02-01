@@ -42,16 +42,22 @@ var TimeEntry = Class.create({
         TimeEntry.lastValues.lastSpentOnDate = event.target.value
      })
 
-     //observe the save button
-     this.getElement('button.save-button').observe('click',function() {
-
-     })
+     //observe the cancel button
+     this.getElement('button.cancel-button').observe('click',function(event) {
+        event.stop()
+        this.cancel()
+     }.bind(this))
 
      //obverse the toggle timer button
      this.getElement('button.toggle-timer-button').observe('click',function(event) {
          event.stop()
 
          this.toggleTimer()
+     }.bind(this))
+
+     //when the form is submitted, the HTML element will disappear, so remove this entry
+     this.container.up('form').observe('submit',function() {
+         this.remove()
      }.bind(this))
   } ,
 
@@ -131,6 +137,7 @@ var TimeEntry = Class.create({
       var hoursInput = this.getElement('input.hours-input')
 
       hoursInput.setStyle({backgroundColor:"#acfbc1"})
+      hoursInput.setStyle({border:"1px solid green"})
 
       this.timedMinutes = this.convertDecimalHoursToMinutes(hoursInput.value)
 
@@ -139,7 +146,7 @@ var TimeEntry = Class.create({
       this.timer = new PeriodicalExecuter(function() {
         this.timedMinutes++;
         this.updateHoursField()
-      }.bind(this), 1)
+      }.bind(this), 60)
   } ,
 
   stopTimer: function() {
@@ -150,8 +157,8 @@ var TimeEntry = Class.create({
 
       this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.start_timer
 
-      this.getElement('input.hours-input').setStyle('background',"#faadb6")
       this.getElement('input.hours-input').setStyle({backgroundColor:"#faadb6"})
+      this.getElement('input.hours-input').setStyle({border:"1px solid red"})
   } ,
 
   stopAllTimers: function() {
@@ -176,18 +183,46 @@ var TimeEntry = Class.create({
      return parseFloat(hours) * 60
   } ,
 
+  save: function() {
+     this.getElement('button.save-button').click()
+  } ,
+
+  cancel: function() {
+     if(confirm(TimeEntry.language.are_you_sure)) {
+        this.container.up('form').remove()
+        this.remove()
+     }
+  } ,
+
+  remove: function() {
+     TimeEntry.entries = TimeEntry.entries.without(this)
+
+     if(this.timer != null) {
+         this.timer.stop()
+         this.timer = null
+     }
+  } ,
+
   getElement: function(cssClass) {
      return this.container.down(cssClass)
   }
 })
 
+//static TimeEntry values and methods:
+
 TimeEntry.lastValues = {
   projectId: null,
-  onlyMyIssues: false,
-  noClosedIssues: false,
+  onlyMyIssues: true,
+  noClosedIssues: true,
   lastSpentOnDate: null //this one is set from ruby
 }
 
 TimeEntry.language = { }
 
 TimeEntry.entries = []
+
+TimeEntry.saveAllEntries = function() {
+  this.entries.each(function(entry) {
+      entry.save()
+  })
+}
