@@ -3,6 +3,9 @@ class BulkTimeEntriesController < ApplicationController
   layout 'base'
   before_filter :load_activities
   before_filter :load_allowed_projects
+
+  helper :custom_fields
+
   
   def index
     @time_entries = [TimeEntry.new(:spent_on => Date.today.to_s)]
@@ -58,9 +61,10 @@ class BulkTimeEntriesController < ApplicationController
           else
             page.replace_html "entry_#{html_id}", "
               <div class='flash notice'>
-                #{Time.now.strftime('%H:%I')}:
-                #{l(:text_time_added_to_project,@time_entry.hours, @time_entry.project.name)}
+                #{Time.now.strftime('%H:%M')}:
+                #{l(:text_time_added_to_project, :hours => @time_entry.hours, :project => @time_entry.project.name)}
                 #{" (#{@time_entry.comments})" unless @time_entry.comments.blank?}.
+                <a href=\"javascript:void(null)\" onclick=\"$(this).up('div.box').remove()\"><img src=\"/images/close.png\" /></a>
               </div>
             "
           end
@@ -90,12 +94,12 @@ class BulkTimeEntriesController < ApplicationController
   private
 
   def load_activities
-    @activities = Enumeration::get_values('ACTI')  
+    @activities = BulkTimeEntryCompatibility::Enumeration::activities
   end
   
   def load_allowed_projects
     @projects = User.current.projects.find(:all,
-      Project.allowed_to_condition(User.current, :log_time), :include => :parent)
+      Project.allowed_to_condition(User.current, :log_time))
   end
 
   def self.allowed_project?(project_id)
