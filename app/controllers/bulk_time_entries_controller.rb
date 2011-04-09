@@ -1,18 +1,19 @@
+# -*- coding: utf-8 -*-
 class BulkTimeEntriesController < ApplicationController
   unloadable
   layout 'base'
   before_filter :load_activities
   before_filter :load_allowed_projects
+  before_filter :load_first_project
+  before_filter :check_for_no_projects
 
   helper :custom_fields
+  include BulkTimeEntriesHelper
 
+  protect_from_forgery :only => [:index, :save]
   
   def index
-    @time_entries = [TimeEntry.new(:spent_on => Date.today.to_s)]
-
-    if @projects.empty?
-      render :action => 'no_projects'
-    end
+    @time_entries = [TimeEntry.new(:spent_on => today_with_time_zone.to_s)]
   end
 
   def get_issues(project_id, assigned_to_id = nil, only_open = false)
@@ -70,7 +71,7 @@ class BulkTimeEntriesController < ApplicationController
           end
         end
       end
-    end    
+    end
   end
     
   def add_entry
@@ -79,22 +80,18 @@ class BulkTimeEntriesController < ApplicationController
     rescue ArgumentError, TypeError
       # Fall through
     end
-    spent_on ||= Date.today
+    spent_on ||= today_with_time_zone
     
     @time_entry = TimeEntry.new(:spent_on => spent_on.to_s)
     respond_to do |format|
-      format.js do
-        render :update do |page| 
-          page.insert_html :bottom, 'entries', :partial => 'time_entry', :object => @time_entry
-        end
-      end
+      format.js {}
     end
   end
   
   private
 
   def load_activities
-    @activities = BulkTimeEntryCompatibility::Enumeration::activities
+    @activities = TimeEntryActivity.all
   end
   
   def load_allowed_projects
@@ -102,7 +99,27 @@ class BulkTimeEntriesController < ApplicationController
       Project.allowed_to_condition(User.current, :log_time))
   end
 
+  def load_first_project
+    @first_project = @projects.sort_by(&:lft).first unless @projects.empty?
+  end
+
+  def check_for_no_projects
+    if @projects.empty?
+      render :action => 'no_projects'
+      return false
+    end
+  end
+
+  # Returns the today's date using the User's time_zone
+  #
+  # @return [Date] today
+  def today_with_time_zone
+    time_proxy = Time.zone = User.current.time_zone
+    time_proxy ||= Time # In case the user has no time_zone
+    today = time_proxy.now.to_date
+  end
+
   def self.allowed_project?(project_id)
-    return User.current.projects.find_by_id(project_id, Project.allowed_to_condition(User.current, :log_time))
+    return User.current.projects.find_by_id(project_id, :conditions => Project.allowed_to_condition(User.current, :log_time))
   end
 end

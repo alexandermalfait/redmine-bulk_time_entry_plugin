@@ -9,11 +9,11 @@
          <%= error_messages_for 'time_entry' %>
          <p>
             <%= label_for_field :project_id, rnd, :required => true %>
-            <% projects = project_tree_options_for_select(@projects, :selected => @first_project) %>
-            <%= f.select :project_id, projects, {}, { :class => "project-select" } %>&nbsp;
+            <%  ordered_projects = group_by_root_for_select(@projects) %>
+            <%= f.select :project_id, ordered_projects, {}, { :class => "project-select" } %>&nbsp;
          </p>
          <p id="entry_<%= rnd %>_issues">
-            <% @issues = controller.get_issues projects.first[1] %>
+            <% @issues = controller.get_issues ordered_projects.first[1] %>
             <%= render :partial => 'issues_selector', :locals => { :issues => @issues, :f => f, :rnd => rnd } %>
          </p>
          <p>
