@@ -7,7 +7,9 @@ var TimeEntry = Class.create({
         this.setInitialValuesFromLastRecord()
 
         //focus the project pulldown by default
-        this.getElement('select.project-select').focus()
+        if(this.getElement('select.project-select')) {
+            this.getElement('select.project-select').focus()
+        }
 
         this.startTimer()
 
@@ -15,29 +17,37 @@ var TimeEntry = Class.create({
     },
 
     observeElements:function () {
-        //select an issue by number
-        this.getElement("input.jump-to-issue").observe('keyup', function (event) {
-            if(event.target.value) {
-                this.selectIssue(event.target.value)
-            }
-        }.bind(this))
+        if(this.getElement("input.jump-to-issue")) {
+            //select an issue by number
+            this.getElement("input.jump-to-issue").observe('keyup', function (event) {
+                if(event.target.value) {
+                    this.selectIssue(event.target.value)
+                }
+            }.bind(this))
+        }
 
-        //save the last selected project, update issues
-        this.getElement('select.project-select').observe('change', function (event) {
-            TimeEntry.lastValues.projectId = event.target.value
-            this.updateIssues()
-        }.bind(this))
+        if(this.getElement('select.project-select')) {
+            //save the last selected project, update issues
+            this.getElement('select.project-select').observe('change', function (event) {
+                TimeEntry.lastValues.projectId = event.target.value
+                this.updateIssues()
+            }.bind(this))
+        }
 
-        //save the last filter checkbox values, update issues
-        this.getElement('input.only-my-issues-checkbox').observe('click', function (event) {
-            TimeEntry.lastValues.onlyMyIssues = event.target.checked
-            this.updateIssues()
-        }.bind(this))
+        if(this.getElement('input.only-my-issues-checkbox')) {
+            //save the last filter checkbox values, update issues
+            this.getElement('input.only-my-issues-checkbox').observe('click', function (event) {
+                TimeEntry.lastValues.onlyMyIssues = event.target.checked
+                this.updateIssues()
+            }.bind(this))
+        }
 
-        this.getElement('input.no-closed-issues-checkbox').observe('click', function (event) {
-            TimeEntry.lastValues.noClosedIssues = event.target.checked
-            this.updateIssues()
-        }.bind(this))
+        if(this.getElement('input.no-closed-issues-checkbox')) {
+            this.getElement('input.no-closed-issues-checkbox').observe('click', function (event) {
+                TimeEntry.lastValues.noClosedIssues = event.target.checked
+                this.updateIssues()
+            }.bind(this))
+        }
 
         //save the last date
         this.getElement('input.spent_on').observe('change', function (event) {
@@ -88,15 +98,17 @@ var TimeEntry = Class.create({
     },
 
     setInitialValuesFromLastRecord:function () {
-        if(TimeEntry.lastValues.projectId) {
-            this.getElement('select.project-select').value = TimeEntry.lastValues.projectId
+        if(! this.getElement('input.preselected-issue-id')) {
+            if(TimeEntry.lastValues.projectId) {
+                this.getElement('select.project-select').value = TimeEntry.lastValues.projectId
+            }
+
+            this.getElement('input.only-my-issues-checkbox').checked = TimeEntry.lastValues.onlyMyIssues
+            this.getElement('input.no-closed-issues-checkbox').checked = TimeEntry.lastValues.noClosedIssues
+            this.getElement('input.spent_on').value = TimeEntry.lastValues.lastSpentOnDate
+
+            this.updateIssues()
         }
-
-        this.getElement('input.only-my-issues-checkbox').checked = TimeEntry.lastValues.onlyMyIssues
-        this.getElement('input.no-closed-issues-checkbox').checked = TimeEntry.lastValues.noClosedIssues
-        this.getElement('input.spent_on').value = TimeEntry.lastValues.lastSpentOnDate
-
-        this.updateIssues()
     },
 
     updateIssues:function () {
@@ -212,10 +224,10 @@ var TimeEntry = Class.create({
 
     getElement:function (cssClass) {
         return this.container.down(cssClass)
-    } ,
+    },
 
-    registerNagger: function() {
-        Event.observe(window, 'beforeunload', function(event) {
+    registerNagger:function () {
+        Event.observe(window, 'beforeunload', function (event) {
             if($$('.time-entry').length > 0) {
                 event.returnValue = "You have unsaved time entries, are you sure you want to close the page?"
             }

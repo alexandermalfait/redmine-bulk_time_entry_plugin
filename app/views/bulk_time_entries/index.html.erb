@@ -1,4 +1,13 @@
-<h2><%= l(:label_bulk_time_entries) %></h2>
+<h2>
+   <%= l(:label_bulk_time_entries) %>
+
+   <% form_remote_tag :url => { :action => "add_entry"}, :html => { :style => "margin-left: 2em" } do %>
+      Add Issue # <%=  text_field_tag :issue_id, "", :size => 10 %>
+
+      <%= submit_tag "OK" %>
+   <% end %>
+</h2>
+
 
 <% content_for :header_tags do %>
    <%= javascript_include_tag 'timeentry', :plugin => 'bulk_time_entry_plugin' %>
