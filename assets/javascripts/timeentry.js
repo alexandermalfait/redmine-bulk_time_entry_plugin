@@ -1,233 +1,243 @@
 var TimeEntry = Class.create({
-   initialize: function(container) {
-      this.container = container;
+    initialize:function (container) {
+        this.container = container;
 
-      this.observeElements()
+        this.observeElements()
 
-      this.setInitialValuesFromLastRecord()
+        this.setInitialValuesFromLastRecord()
 
-      //focus the project pulldown by default
-      this.getElement('select.project-select').focus()
+        //focus the project pulldown by default
+        this.getElement('select.project-select').focus()
 
-      this.startTimer()
-   } ,
+        this.startTimer()
 
-   observeElements: function() {
-      //select an issue by number
-      this.getElement("input.jump-to-issue").observe('keyup',function(event) {
-         if(event.target.value) {
-            this.selectIssue(event.target.value)
-         }
-      }.bind(this))
+        this.registerNagger()
+    },
 
-      //save the last selected project, update issues
-      this.getElement('select.project-select').observe('change',function(event) {
-         TimeEntry.lastValues.projectId = event.target.value
-         this.updateIssues()
-      }.bind(this))
+    observeElements:function () {
+        //select an issue by number
+        this.getElement("input.jump-to-issue").observe('keyup', function (event) {
+            if(event.target.value) {
+                this.selectIssue(event.target.value)
+            }
+        }.bind(this))
 
-      //save the last filter checkbox values, update issues
-      this.getElement('input.only-my-issues-checkbox').observe('click',function(event) {
-         TimeEntry.lastValues.onlyMyIssues = event.target.checked
-         this.updateIssues()
-      }.bind(this))
+        //save the last selected project, update issues
+        this.getElement('select.project-select').observe('change', function (event) {
+            TimeEntry.lastValues.projectId = event.target.value
+            this.updateIssues()
+        }.bind(this))
 
-      this.getElement('input.no-closed-issues-checkbox').observe('click',function(event) {
-         TimeEntry.lastValues.noClosedIssues = event.target.checked
-         this.updateIssues()
-      }.bind(this))
+        //save the last filter checkbox values, update issues
+        this.getElement('input.only-my-issues-checkbox').observe('click', function (event) {
+            TimeEntry.lastValues.onlyMyIssues = event.target.checked
+            this.updateIssues()
+        }.bind(this))
 
-      //save the last date
-      this.getElement('input.spent_on').observe('change',function(event) {
-         TimeEntry.lastValues.lastSpentOnDate = event.target.value
-      })
+        this.getElement('input.no-closed-issues-checkbox').observe('click', function (event) {
+            TimeEntry.lastValues.noClosedIssues = event.target.checked
+            this.updateIssues()
+        }.bind(this))
 
-      //observe the cancel button
-      this.getElement('button.cancel-button').observe('click',function(event) {
-         event.stop()
-         this.cancel()
-      }.bind(this))
+        //save the last date
+        this.getElement('input.spent_on').observe('change', function (event) {
+            TimeEntry.lastValues.lastSpentOnDate = event.target.value
+        })
 
-      //obverse the toggle timer button
-      this.getElement('button.toggle-timer-button').observe('click',function(event) {
-         event.stop()
+        //observe the cancel button
+        this.getElement('button.cancel-button').observe('click', function (event) {
+            event.stop()
+            this.cancel()
+        }.bind(this))
 
-         this.toggleTimer()
-      }.bind(this))
+        //obverse the toggle timer button
+        this.getElement('button.toggle-timer-button').observe('click', function (event) {
+            event.stop()
 
-      //when the form is submitted, the HTML element will disappear, so remove this entry
-      this.container.up('form').observe('submit',function() {
-         this.remove()
-      }.bind(this))
-   } ,
+            this.toggleTimer()
+        }.bind(this))
 
-   bindIssueSelectorToLink: function() {
-      var issueSelector = this.getElement('select.issue-select')
+        //when the form is submitted, the HTML element will disappear, so remove this entry
+        this.container.up('form').observe('submit', function () {
+            this.remove()
+        }.bind(this))
+    },
 
-      if(issueSelector) {
-         issueSelector.observe('change',function() {
-            this.setIssueLinkUrl();
-         }.bind(this))
-      }
-   } ,
+    bindIssueSelectorToLink:function () {
+        var issueSelector = this.getElement('select.issue-select')
 
-   setIssueLinkUrl: function() {
-      var issueLink = this.getElement('a.issue-link')
-      var issueSelector = this.getElement('select.issue-select')
+        if(issueSelector) {
+            issueSelector.observe('change', function () {
+                this.setIssueLinkUrl();
+            }.bind(this))
+        }
+    },
 
-      if(issueSelector.value > 0) {
-         issueLink.writeAttribute("href", "/issues/show/" + issueSelector.value)
-         issueLink.writeAttribute("target", "_blank")
-      }
-      else {
-         issueLink.writeAttribute("href", "")
-         issueLink.writeAttribute("target", "")
-      }
-   } ,
+    setIssueLinkUrl:function () {
+        var issueLink = this.getElement('a.issue-link')
+        var issueSelector = this.getElement('select.issue-select')
 
-   setInitialValuesFromLastRecord: function() {
-      if(TimeEntry.lastValues.projectId) {
-         this.getElement('select.project-select').value = TimeEntry.lastValues.projectId
-      }
+        if(issueSelector.value > 0) {
+            issueLink.writeAttribute("href", "/issues/show/" + issueSelector.value)
+            issueLink.writeAttribute("target", "_blank")
+        }
+        else {
+            issueLink.writeAttribute("href", "")
+            issueLink.writeAttribute("target", "")
+        }
+    },
 
-      this.getElement('input.only-my-issues-checkbox').checked = TimeEntry.lastValues.onlyMyIssues
-      this.getElement('input.no-closed-issues-checkbox').checked = TimeEntry.lastValues.noClosedIssues
-      this.getElement('input.spent_on').value = TimeEntry.lastValues.lastSpentOnDate
+    setInitialValuesFromLastRecord:function () {
+        if(TimeEntry.lastValues.projectId) {
+            this.getElement('select.project-select').value = TimeEntry.lastValues.projectId
+        }
 
-      this.updateIssues()
-   } ,
+        this.getElement('input.only-my-issues-checkbox').checked = TimeEntry.lastValues.onlyMyIssues
+        this.getElement('input.no-closed-issues-checkbox').checked = TimeEntry.lastValues.noClosedIssues
+        this.getElement('input.spent_on').value = TimeEntry.lastValues.lastSpentOnDate
 
-   updateIssues: function() {
-      var params = {
-         project_id: $F(this.getElement('select.project-select')),
-         entry_id: this.container.id
-      }
+        this.updateIssues()
+    },
 
-      if(this.getElement('input.only-my-issues-checkbox').checked) {
-         params.assigned_to_id = TimeEntry.defaultUserId
-      }
+    updateIssues:function () {
+        var params = {
+            project_id:$F(this.getElement('select.project-select')),
+            entry_id:this.container.id
+        }
 
-      if(this.getElement('input.no-closed-issues-checkbox').checked) {
-         params.only_open = true
-      }
+        if(this.getElement('input.only-my-issues-checkbox').checked) {
+            params.assigned_to_id = TimeEntry.defaultUserId
+        }
 
-      new Ajax.Request(TimeEntry.loadIssuesUrl, {
-         parameters: params,
-         onComplete: function() {
-            this.bindIssueSelectorToLink()
-         }.bind(this)
-      })
-   } ,
+        if(this.getElement('input.no-closed-issues-checkbox').checked) {
+            params.only_open = true
+        }
 
-   selectIssue: function(issueId) {
-      var selector = this.container.down('select.issue-select')
+        new Ajax.Request(TimeEntry.loadIssuesUrl, {
+            parameters:params,
+            onComplete:function () {
+                this.bindIssueSelectorToLink()
+            }.bind(this)
+        })
+    },
 
-      if(selector) {
-         selector.value = issueId;
+    selectIssue:function (issueId) {
+        var selector = this.container.down('select.issue-select')
 
-         this.setIssueLinkUrl()
-      }
-   } ,
+        if(selector) {
+            selector.value = issueId;
 
-   toggleTimer: function() {
-      if(this.timer == null) {
-         this.startTimer()
-      }
-      else {
-         this.stopTimer()
-      }
-   } ,
+            this.setIssueLinkUrl()
+        }
+    },
 
-   startTimer: function() {
-      this.stopAllTimers()
+    toggleTimer:function () {
+        if(this.timer == null) {
+            this.startTimer()
+        }
+        else {
+            this.stopTimer()
+        }
+    },
 
-      var hoursInput = this.getElement('input.hours-input')
+    startTimer:function () {
+        this.stopAllTimers()
 
-      hoursInput.setStyle({ backgroundColor:"#acfbc1", border:"1px solid green" })
+        var hoursInput = this.getElement('input.hours-input')
 
-      this.timedMinutes = this.convertDecimalHoursToMinutes(hoursInput.value)
+        hoursInput.setStyle({ backgroundColor:"#acfbc1", border:"1px solid green" })
 
-      this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.stop_timer
+        this.timedMinutes = this.convertDecimalHoursToMinutes(hoursInput.value)
 
-      this.timer = new PeriodicalExecuter(function() {
-         this.timedMinutes++;
-         this.updateHoursField()
-      }.bind(this), 60)
-   } ,
+        this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.stop_timer
 
-   stopTimer: function() {
-      if(this.timer != null) {
-         this.timer.stop()
-         this.timer = null
-      }
+        this.timer = new PeriodicalExecuter(function () {
+            this.timedMinutes++;
+            this.updateHoursField()
+        }.bind(this), 60)
+    },
 
-      this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.start_timer
+    stopTimer:function () {
+        if(this.timer != null) {
+            this.timer.stop()
+            this.timer = null
+        }
 
-      this.getElement('input.hours-input').setStyle({ backgroundColor:"#faadb6", border:"1px solid red" })
-   } ,
+        this.getElement('button.toggle-timer-button').innerHTML = TimeEntry.language.start_timer
 
-   stopAllTimers: function() {
-      TimeEntry.entries.each(function(entry) {
-         entry.stopTimer()
-      })
-   } ,
+        this.getElement('input.hours-input').setStyle({ backgroundColor:"#faadb6", border:"1px solid red" })
+    },
 
-   updateHoursField: function() {
-      this.getElement('input.hours-input').value = this.convertMinutesToDecimalHours(this.timedMinutes)
-   } ,
+    stopAllTimers:function () {
+        TimeEntry.entries.each(function (entry) {
+            entry.stopTimer()
+        })
+    },
 
-   convertMinutesToDecimalHours: function(minutes) {
-      return Math.round((minutes / 60) * 100) / 100
-   } ,
+    updateHoursField:function () {
+        this.getElement('input.hours-input').value = this.convertMinutesToDecimalHours(this.timedMinutes)
+    },
 
-   convertDecimalHoursToMinutes: function(hours) {
-      if(!hours) {
-         return 0;
-      }
+    convertMinutesToDecimalHours:function (minutes) {
+        return Math.round((minutes / 60) * 100) / 100
+    },
 
-      return parseFloat(hours) * 60
-   } ,
+    convertDecimalHoursToMinutes:function (hours) {
+        if(!hours) {
+            return 0;
+        }
 
-   save: function() {
-      this.getElement('button.save-button').click()
-   } ,
+        return parseFloat(hours) * 60
+    },
 
-   cancel: function() {
-      if(confirm(TimeEntry.language.are_you_sure)) {
-         this.container.up('form').remove()
-         this.remove()
-      }
-   } ,
+    save:function () {
+        this.getElement('button.save-button').click()
+    },
 
-   remove: function() {
-      TimeEntry.entries = TimeEntry.entries.without(this)
+    cancel:function () {
+        if(confirm(TimeEntry.language.are_you_sure)) {
+            this.container.up('form').remove()
+            this.remove()
+        }
+    },
 
-      if(this.timer != null) {
-         this.timer.stop()
-         this.timer = null
-      }
-   } ,
+    remove:function () {
+        TimeEntry.entries = TimeEntry.entries.without(this)
 
-   getElement: function(cssClass) {
-      return this.container.down(cssClass)
-   }
+        if(this.timer != null) {
+            this.timer.stop()
+            this.timer = null
+        }
+    },
+
+    getElement:function (cssClass) {
+        return this.container.down(cssClass)
+    } ,
+
+    registerNagger: function() {
+        Event.observe(window, 'beforeunload', function(event) {
+            if($$('.time-entry').length > 0) {
+                event.returnValue = "You have unsaved time entries, are you sure you want to close the page?"
+            }
+        });
+    }
 })
 
 //static TimeEntry values and methods:
 
 TimeEntry.lastValues = {
-   projectId: null,
-   onlyMyIssues: true,
-   noClosedIssues: true,
-   lastSpentOnDate: null //this one is set from ruby
+    projectId:null,
+    onlyMyIssues:true,
+    noClosedIssues:true,
+    lastSpentOnDate:null //this one is set from ruby
 }
 
 TimeEntry.language = { }
 
 TimeEntry.entries = []
 
-TimeEntry.saveAllEntries = function() {
-   this.entries.each(function(entry) {
-      entry.save()
-   })
+TimeEntry.saveAllEntries = function () {
+    this.entries.each(function (entry) {
+        entry.save()
+    })
 }
