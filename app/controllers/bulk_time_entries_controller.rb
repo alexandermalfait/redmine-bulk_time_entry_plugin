@@ -92,10 +92,6 @@ class BulkTimeEntriesController < ApplicationController
       @selected_project = @selected_issue.project
 
       @issues = [ @selected_issue ]
-    else
-      @selected_project = @projects.sort_by(&:lft).first unless @projects.empty?
-
-      @issues = get_issues @selected_project
     end
 
     respond_to do |format|

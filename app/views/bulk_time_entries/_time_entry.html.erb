@@ -26,7 +26,7 @@
             <p>
                <%= label_for_field :project_id, rnd, :required => true %>
                <% projects = project_tree_options_for_select(@projects, :selected => @selected_project) %>
-               <%= f.select :project_id, projects, {}, { :class => "project-select" } %>&nbsp;
+               <%= f.select :project_id, '<option value="">(choose project)</option>' + projects, {}, { :class => "project-select" } %>&nbsp;
             </p>
 
             <p id="entry_<%= rnd %>_issues">
