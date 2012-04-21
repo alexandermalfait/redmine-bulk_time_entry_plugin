@@ -88,7 +88,7 @@ var TimeEntry = Class.create({
         var issueSelector = this.getElement('select.issue-select')
 
         if(issueSelector.value > 0) {
-            issueLink.writeAttribute("href", "/issues/show/" + issueSelector.value)
+            issueLink.writeAttribute("href", "/issues/" + issueSelector.value)
             issueLink.writeAttribute("target", "_blank")
         }
         else {
