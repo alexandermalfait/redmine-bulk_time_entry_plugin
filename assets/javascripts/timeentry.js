@@ -253,3 +253,7 @@ TimeEntry.saveAllEntries = function () {
         entry.save()
     })
 }
+
+TimeEntry.updateTodayEntries = function() {
+    new Ajax.Updater('time-entries-today', TimeEntry.timeEntriesTodayUrl)
+}

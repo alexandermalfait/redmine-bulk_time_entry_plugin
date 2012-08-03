@@ -67,6 +67,8 @@ class BulkTimeEntriesController < ApplicationController
                 <a href=\"javascript:void(null)\" onclick=\"$(this).up('div.box').remove()\"><img src=\"/images/close.png\" /></a>
               </div>
             "
+
+            page.call 'TimeEntry.updateTodayEntries()'
           end
         end
       end
@@ -98,7 +100,20 @@ class BulkTimeEntriesController < ApplicationController
       format.js {}
     end
   end
-  
+
+  def time_entries_today
+    @entries = TimeEntry.all(
+      :conditions => ["#{TimeEntry.table_name}.user_id = ? AND #{TimeEntry.table_name}.spent_on = ?", find_current_user.id, Date.today],
+      :include => [:activity, :project, {:issue => [:tracker, :status]}],
+      :order => "#{TimeEntry.table_name}.created_on DESC"
+    )
+
+    @user = find_current_user
+
+    render :layout => false
+  end
+
+
   private
 
   def load_activities
@@ -116,6 +131,7 @@ class BulkTimeEntriesController < ApplicationController
       return false
     end
   end
+
 
   # Returns the today's date using the User's time_zone
   #

@@ -14,13 +14,28 @@
 
    <script type="text/javascript">
       TimeEntry.defaultUserId = <%= User.current.id %>
-      TimeEntry.loadIssuesUrl = "<%= url_for :action => 'load_assigned_issues' %>"
+      TimeEntry.loadIssuesUrl = "<%= url_for :action => :load_assigned_issues %>"
+      TimeEntry.timeEntriesTodayUrl = "<%= url_for :action => :time_entries_today %>"
       TimeEntry.lastValues.lastSpentOnDate = "<%=  Date.today.to_s %>"
 
       TimeEntry.language.start_timer = <%= l(:button_start_timer).to_json %>
       TimeEntry.language.stop_timer = <%= l(:button_stop_timer).to_json %>
       TimeEntry.language.are_you_sure = <%= l(:text_are_you_sure).to_json %>
+
+       document.observe('dom:loaded', function() {
+           TimeEntry.updateTodayEntries()
+       })
    </script>
+
+    <style type="text/css">
+        table.list th {
+            text-align: left;
+        }
+
+        table.list td, table.list th {
+            padding: .2em .5em;
+        }
+    </style>
 <% end %>
 
 
@@ -35,6 +50,10 @@
    <button onclick="TimeEntry.saveAllEntries(); return false;" style="margin-left: 1em;">
       <%= l(:button_save_all_entries) %>
    </button>
+</div>
+
+<div id="time-entries-today" style="margin-top: 2em;">
+
 </div>
 
 <% html_title l(:label_bulk_time_entries) %>
