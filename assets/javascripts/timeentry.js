@@ -125,8 +125,12 @@ var TimeEntry = Class.create({
             params.only_open = true
         }
 
-        new Ajax.Request(TimeEntry.loadIssuesUrl, {
+
+        console.log(this.getElement('.issue-selector-container'))
+
+        new Ajax.Updater(this.getElement('.issue-selector-container'), TimeEntry.loadIssuesUrl, {
             parameters:params,
+            method: "get",
             onComplete:function () {
                 this.bindIssueSelectorToLink()
             }.bind(this)

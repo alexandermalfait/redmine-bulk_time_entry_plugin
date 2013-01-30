@@ -2,7 +2,7 @@
 <% if @issues.nil? || @issues.empty? %>
    <em><%= l(:label_no_data) %></em>
 <% else %>
-   <%= select_tag "time_entries[#{rnd}][issue_id]", grouped_options_for_issues(@issues), :class => "issue-select", :style => "max-width: 95%;" %>&nbsp;
+   <%= select_tag "time_entries[#{rnd}][issue_id]", grouped_options_for_issues(@issues).html_safe, :class => "issue-select", :style => "max-width: 95%;" %>&nbsp;
 
    <a href="javascript: alert('<% l(:label_select_issue_first) %>');" class="issue-link">
       <img src="/images/zoom_in.png" />

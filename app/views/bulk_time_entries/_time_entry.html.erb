@@ -1,5 +1,5 @@
-<% remote_form_for :bulk_time_entry_title, @bulk_time_entry, :url => {:action => 'save'}, :html => {:class => 'tabular time-entry'} do |f| %>
-   <% fields_for('time_entries[]', time_entry) do |f| %>
+<%= form_for :bulk_time_entry, :url => {:action => 'save'}, :html => {:class => 'tabular time-entry'} do |f| %>
+   <%= fields_for('time_entries[]', time_entry) do |f| %>
       <%# trick to have automatically populated html id/names of fields %>
       <% time_entry.id = rnd = rand(9999)
       @object = time_entry
@@ -24,12 +24,13 @@
             </p>
          <% else %>
             <p>
-               <%= label_for_field :project_id, rnd, :required => true %>
-               <% projects = project_tree_options_for_select(@projects, :selected => @selected_project) %>
-               <%= f.select :project_id, '<option value="">(choose project)</option>' + projects, {}, { :class => "project-select" } %>&nbsp;
+               <%= label_for_field(:project_id, rnd, :required => true) %>
+               <% projects = project_tree_options_for_select(@projects, :selected => @selected_project).html_safe %>
+
+               <%= f.select :project_id, ('<option value="">(choose project)</option>' + projects).html_safe, {}, { :class => "project-select" } %>&nbsp;
             </p>
 
-            <p id="entry_<%= rnd %>_issues">
+            <p id="entry_<%= rnd %>_issues" class="issue-selector-container">
                <%= render :partial => 'issues_selector', :locals => { :issues => @issues, :f => f, :rnd => rnd } %>
             </p>
             <p>
@@ -86,7 +87,7 @@
    <% end %>
 
    <script type="text/javascript">
-      var timeEntry = new TimeEntry($('entry_<%= @object.id %>'))
+      var timeEntry = new TimeEntry($P('entry_<%= @object.id %>'))
       TimeEntry.entries.push(timeEntry)
    </script>
 

@@ -1,16 +1,18 @@
 <h2>
    <%= l(:label_bulk_time_entries) %>
 
-   <% form_remote_tag :url => { :action => "add_entry"}, :html => { :style => "margin-left: 2em" } do %>
-      Add Issue # <%=  text_field_tag :issue_id, "", :size => 10 %>
+    <form style="margin-left: 2em;" id="add-by-issue-id" action="#">
+        Add Issue # <%=  text_field_tag :issue_id, "", :size => 10 %>
 
-      <%= submit_tag "OK" %>
-   <% end %>
+        <%= submit_tag "OK" %>
+    </form>
 </h2>
 
 
 <% content_for :header_tags do %>
+   <%= javascript_include_tag 'prototype', :plugin => 'bulk_time_entry_plugin' %>
    <%= javascript_include_tag 'timeentry', :plugin => 'bulk_time_entry_plugin' %>
+
 
    <script type="text/javascript">
       TimeEntry.defaultUserId = <%= User.current.id %>
@@ -18,13 +20,38 @@
       TimeEntry.timeEntriesTodayUrl = "<%= url_for :action => :time_entries_today %>"
       TimeEntry.lastValues.lastSpentOnDate = "<%=  Date.today.to_s %>"
 
-      TimeEntry.language.start_timer = <%= l(:button_start_timer).to_json %>
-      TimeEntry.language.stop_timer = <%= l(:button_stop_timer).to_json %>
-      TimeEntry.language.are_you_sure = <%= l(:text_are_you_sure).to_json %>
+      TimeEntry.language.start_timer = <%= raw l(:button_start_timer).to_json %>
+      TimeEntry.language.stop_timer = <%= raw l(:button_stop_timer).to_json %>
+      TimeEntry.language.are_you_sure = <%= raw l(:text_are_you_sure).to_json %>
 
        document.observe('dom:loaded', function() {
            TimeEntry.updateTodayEntries()
        })
+
+
+      $(function() {
+          $('#add-by-issue-id').submit(function() {
+              $.get("<%= url_for(:action => :add_entry) %>", $(this).serialize(), function(response) {
+                  $('#entries').append(response)
+              })
+
+              return false
+          })
+
+          $(document).on("submit", "form.time-entry", function() {
+              var $form = $(this)
+
+              $.post($(this).attr('action'), $(this).serialize(), function(response) {
+                  $form.html(response)
+
+                  TimeEntry.updateTodayEntries()
+              })
+
+              return false
+          });
+      })
+
+
    </script>
 
     <style type="text/css">
@@ -43,7 +70,7 @@
    <%= render :partial => 'time_entry', :collection => @time_entries %>
 </div>
 <div id="add-entry">
-   <button onclick="<%= remote_function(:url => {:action => 'add_entry'}) %>" accesskey="a">
+   <button onclick="$.get('<%= url_for(:action => 'add_entry') %>', function(data) { $('#entries').append(data) })" accesskey="a">
       <%=  l(:label_bulk_time_add_another) %>
    </button>
 
