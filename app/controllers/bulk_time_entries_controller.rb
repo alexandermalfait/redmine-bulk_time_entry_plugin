@@ -64,7 +64,7 @@ class BulkTimeEntriesController < ApplicationController
               #{Time.now.strftime('%H:%M')}:
               #{l(:text_time_added_to_project, :hours => @time_entry.hours, :project => @time_entry.project.name)}
               #{" (#{@time_entry.comments})" unless @time_entry.comments.blank?}.
-              <a href=\"javascript:void(null)\" onclick=\"$(this).up('div.box').remove()\"><img src=\"/images/close.png\" /></a>
+              <a href=\"javascript:void(null)\" onclick=\"$(this).closest('div.box').remove()\"><img src=\"/images/close.png\" /></a>
             </div>
           "
         end
