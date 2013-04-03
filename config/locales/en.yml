@@ -1,5 +1,6 @@
 en:
   bulk_time_entry_title: Bulk time entries
+  add_issue: Add Issue
   label_bulk_time_entries: Bulk Time Entries
   label_bulk_time_add_another: Add Another
   text_bulk_time_entry_permission: You do not have permission to log time on any projects
@@ -13,3 +14,4 @@ en:
   button_start_timer: Start Timer
   button_stop_timer: Stop Timer
   button_save_all_entries: Save all entries
+  time_entry_title: Your time entries for today
