@@ -2,7 +2,7 @@
    <%= l(:label_bulk_time_entries) %>
 
     <form style="margin-left: 2em;" id="add-by-issue-id" action="#">
-        Add Issue # <%=  text_field_tag :issue_id, "", :size => 10 %>
+        <%= l(:add_issue) %> # <%=  text_field_tag :issue_id, "", :size => 10 %>
 
         <%= submit_tag "OK" %>
     </form>
