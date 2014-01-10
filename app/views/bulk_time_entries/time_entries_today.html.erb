@@ -1,4 +1,4 @@
-<h3>Your time entries for today</h3>
+<h3><%= l(:time_entry_title) %></h3>
 
 <div class="total-hours">
     <p><%= l(:label_total) %>: <%= html_hours("%.2f" % @entries.sum(&:hours).to_f) %></p>
