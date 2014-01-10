@@ -105,7 +105,6 @@ var TimeEntry = Class.create({
 
             this.getElement('input.only-my-issues-checkbox').checked = TimeEntry.lastValues.onlyMyIssues
             this.getElement('input.no-closed-issues-checkbox').checked = TimeEntry.lastValues.noClosedIssues
-            this.getElement('input.spent_on').value = TimeEntry.lastValues.lastSpentOnDate
 
             this.updateIssues()
         }
